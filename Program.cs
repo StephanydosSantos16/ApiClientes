@@ -6,30 +6,29 @@ using ApiClientes.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serviços padrão
+// Adiciona serviços
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Injeção de dependência
+// Injeta dependências
 builder.Services.AddSingleton<DbSession>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 
-// CORS liberado para qualquer origem (⚠️ apenas para testes!)
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+// Libera CORS para qualquer origem (importante para conectar com o frontend na Render)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
-        {
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddDefaultPolicy(policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
-// Configura para escutar na porta 80 (Render exige isso)
+// Configura Kestrel para ouvir na porta 80 (necessário na Render)
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(80);
@@ -37,14 +36,15 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
-// Swagger
+// Middleware do Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// CORS
-app.UseCors(MyAllowSpecificOrigins);
+// Usa CORS
+app.UseCors();
 
-// Mapeia os controllers
+// Mapear controladores
 app.MapControllers();
 
+// Roda a aplicação
 app.Run();
