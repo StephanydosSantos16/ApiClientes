@@ -3,6 +3,8 @@ import ClientesList from './components/ClientesList';
 import ClienteForm from './components/ClienteForm';
 import EditarCliente from './components/EditarCliente';
 
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5263';
+
 function App() {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,7 @@ function App() {
   const carregarClientes = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5263/api/Clientes');
+      const res = await fetch(`${apiUrl}/api/Clientes`);
       const data = await res.json();
       setClientes(data);
     } catch {
@@ -28,7 +30,7 @@ function App() {
     if (!window.confirm('Deseja realmente deletar este cliente?')) return;
 
     try {
-      const res = await fetch(`http://localhost:5263/api/Clientes/${id}`, {
+      const res = await fetch(`${apiUrl}/api/Clientes/${id}`, {
         method: 'DELETE',
       });
       if (res.status === 204) {
@@ -42,14 +44,7 @@ function App() {
     }
   };
 
-  const cancelarEdicao = () => {
-    setClienteEditando(null);
-  };
-
-  const atualizouCliente = () => {
-    setClienteEditando(null);
-    carregarClientes();
-  };
+  // resto do código permanece igual...
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial' }}>
@@ -61,7 +56,7 @@ function App() {
           )}
         </>
       ) : (
-        <EditarCliente cliente={clienteEditando} onAtualizado={atualizouCliente} onCancelar={cancelarEdicao} />
+        <EditarCliente cliente={clienteEditando} onAtualizado={carregarClientes} onCancelar={() => setClienteEditando(null)} />
       )}
     </div>
   );
