@@ -6,31 +6,30 @@ using ApiClientes.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Serviços padrão
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Injeção de dependência
 builder.Services.AddSingleton<DbSession>();
-
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 
+// CORS liberado para qualquer origem (⚠️ apenas para testes!)
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins(
-                "http://localhost:5173",
-                "https://site-react-csyr.onrender.com"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
         });
 });
 
+// Configura para escutar na porta 80 (Render exige isso)
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(80);
@@ -38,11 +37,14 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
+// Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// CORS
 app.UseCors(MyAllowSpecificOrigins);
 
+// Mapeia os controllers
 app.MapControllers();
 
 app.Run();
